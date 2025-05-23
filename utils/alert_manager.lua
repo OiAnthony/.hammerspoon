@@ -70,6 +70,19 @@ local styles = {
         fadeOutDuration = 0.2
     },
 
+    -- 输入法切换提醒（右下角显示）
+    inputMethod = {
+        fillColor = { red = 0.2, green = 0.2, blue = 0.2, alpha = 0.8 },
+        strokeColor = { red = 0.4, green = 0.4, blue = 0.4, alpha = 0.9 },
+        strokeWidth = 1,
+        radius = 6,
+        textColor = { red = 1, green = 1, blue = 1, alpha = 0.95 },
+        textFont = ".AppleSystemUIFont",
+        textSize = 10,
+        fadeInDuration = 0.1,
+        fadeOutDuration = 0.15
+    },
+
     -- 应用信息提醒（深色主题，适中尺寸）
     appInfo = {
         fillColor = { red = 0.1, green = 0.1, blue = 0.1, alpha = 0.9 },
@@ -86,11 +99,11 @@ local styles = {
 
 -- 设置
 local settings = {
-    enableInputMethodAlerts = false, -- 默认关闭输入法切换提醒
-    enableStartupAlerts = true,      -- 启动提醒
-    silentDuration = 0.8,            -- 静默提醒持续时间
-    normalDuration = 2,              -- 普通提醒持续时间
-    longDuration = 4                 -- 长提醒持续时间
+    enableInputMethodAlerts = true, -- 默认开启输入法切换提醒
+    enableStartupAlerts = true,     -- 启动提醒
+    silentDuration = 0.8,           -- 静默提醒持续时间
+    normalDuration = 2,             -- 普通提醒持续时间
+    longDuration = 4                -- 长提醒持续时间
 }
 
 -- 显示美化的 alert
@@ -102,6 +115,24 @@ function alertManager.show(message, style, duration)
 
     -- 使用 hs.alert.show 的高级参数
     hs.alert.show(message, alertStyle, duration)
+end
+
+-- 显示右下角 alert（专门用于输入法切换）
+function alertManager.showAtBottom(message, style, duration)
+    style = style or "inputMethod"
+    duration = duration or settings.silentDuration
+
+    local alertStyle = styles[style] or styles.inputMethod
+
+    -- 创建右下角显示的样式，使用 atScreenEdge = 2 表示底部边缘
+    local bottomRightStyle = {}
+    for k, v in pairs(alertStyle) do
+        bottomRightStyle[k] = v
+    end
+    bottomRightStyle.atScreenEdge = 2 -- 2 表示底部边缘
+
+    -- 使用官方的 hs.alert.show API
+    return hs.alert.show(message, bottomRightStyle, duration)
 end
 
 -- 成功提醒
@@ -131,11 +162,11 @@ function alertManager.appInfo(message, duration)
     alertManager.show(message, "appInfo", duration or settings.longDuration)
 end
 
--- 输入法切换提醒（可配置是否显示）
+-- 输入法切换提醒（右下角显示）
 function alertManager.inputMethodSwitch(inputMethod)
     if settings.enableInputMethodAlerts then
         local message = "⌨️ " .. inputMethod
-        alertManager.silent(message, settings.silentDuration)
+        alertManager.showAtBottom(message, "inputMethod", settings.silentDuration)
     end
 end
 
